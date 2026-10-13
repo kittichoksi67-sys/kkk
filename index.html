@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FFOG Online: ระบบนวัตกรรมการเรียนรู้เศษส่วน ป.5</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome CDN for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Prompt -->
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Prompt', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0284c7',
+                            600: '#0369a1',
+                            700: '#075985',
+                        },
+                        fraction1: '#3b82f6', // Vertical Blue
+                        fraction2: '#ef4444', // Horizontal Red
+                        overlay: '#8b5cf6',   // Purple combination
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+        .grid-overlay-container {
+            position: relative;
+            aspect-ratio: 1 / 1;
+        }
+        .cell-transition {
+            transition: all 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
+
+    <!-- Navigation Header -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-xl shadow-md">
+                    <i class="fa-solid fa-cubes-stacked"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg text-slate-800 leading-tight">FFOG Online Kit</h1>
+                    <p class="text-xs text-slate-500">นวัตกรรมพับ-ทาบ-ไข ปริศนาเศษส่วน ป.5 (CPA Approach)</p>
+                </div>
+            </div>
+
+            <!-- REP Energy Points Badge -->
+            <div class="flex items-center gap-4">
+                <div class="bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-full flex items-center gap-2 shadow-sm">
+                    <i class="fa-solid fa-bolt text-amber-500 animate-pulse"></i>
+                    <span class="text-xs font-semibold text-amber-800">REP Points:</span>
+                    <span id="repScore" class="font-bold text-amber-600 text-sm">100</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area with Navigation Tabs -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-6">
+        
+        <!-- Navigation Tabs -->
+        <div class="flex flex-wrap gap-2 border-b border-slate-200 pb-2">
+            <button onclick="switchTab('simulator')" id="tab-simulator" class="tab-btn active-tab px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 transition-all bg-blue-600 text-white shadow-sm">
+                <i class="fa-solid fa-[#]"></i> 1. เครื่องมือซ้อนทาบ (FFOG Simulator)
+            </button>
+            <button onclick="switchTab('detective')" id="tab-detective" class="tab-btn px-4 py-2 rounded-lg font-medium text-sm text-slate-600 hover:bg-slate-100 flex items-center gap-2 transition-all">
+                <i class="fa-solid fa-magnifying-glass"></i> 2. นักสืบจับผิด (Error Detective)
+            </button>
+            <button onclick="switchTab('lessons')" id="tab-lessons" class="tab-btn px-4 py-2 rounded-lg font-medium text-sm text-slate-600 hover:bg-slate-100 flex items-center gap-2 transition-all">
+                <i class="fa-solid fa-chalkboard-user"></i> 3. บทเรียน 3 คาบ (Guided Flow)
+            </button>
+            <button onclick="switchTab('teacher')" id="tab-teacher" class="tab-btn px-4 py-2 rounded-lg font-medium text-sm text-slate-600 hover:bg-slate-100 flex items-center gap-2 transition-all">
+                <i class="fa-solid fa-book-bookmark"></i> 4. คู่มือครู & Rubric
+            </button>
+        </div>
+
+        <!-- TAB 1: FFOG SIMULATOR -->
+        <section id="sec-simulator" class="tab-content flex flex-col gap-6">
+            <!-- Header Banner -->
+            <div class="bg-gradient-to-r from-blue-900 to-indigo-800 text-white p-6 rounded-2xl shadow-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <span class="inline-block bg-blue-500/30 text-blue-200 text-xs px-3 py-1 rounded-full font-medium mb-2 border border-blue-400/30">Concrete & Pictorial Simulator</span>
+                    <h2 class="text-2xl font-bold">ห้องปฏิบัติการจำลอง "พับ-ทาบ-ไข"</h2>
+                    <p class="text-blue-100 text-sm mt-1">เห็นการแปลงตัวส่วนแบบเห็นภาพจริง สัมผัสตารางส่วนร่วมโดยไม่ต้องคูณไขว้แบบท่องจำ</p>
+                </div>
+                <div class="bg-white/10 backdrop-blur-md px-4 py-3 rounded-xl border border-white/20 text-xs flex items-center gap-3">
+                    <i class="fa-solid fa-lightbulb text-amber-300 text-2xl"></i>
+                    <div>
+                        <div class="font-bold text-white">สโลแกน FFOG:</div>
+                        <div class="text-blue-200">"มองเห็นภาพ สัมผัสได้ เข้าใจขนาดส่วน ไม่ต้องท่องสูตร"</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Interactive Controls & Viewport -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                <!-- Left Column: Controls & Fraction Settings -->
+                <div class="lg:col-span-4 flex flex-col gap-5">
+                    
+                    <!-- Operation Selector -->
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-3">
+                        <label class="font-bold text-slate-700 text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-calculator text-blue-600"></i> เลือกการดำเนินการ
+                        </label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button id="op-add" onclick="setOperation('+')" class="py-2.5 px-4 rounded-xl border-2 font-bold text-sm flex items-center justify-center gap-2 transition-all border-blue-600 bg-blue-50 text-blue-700">
+                                <i class="fa-solid fa-plus"></i> การบวก (+)
+                            </button>
+                            <button id="op-sub" onclick="setOperation('-')" class="py-2.5 px-4 rounded-xl border-2 font-bold text-sm flex items-center justify-center gap-2 transition-all border-slate-200 text-slate-600 hover:bg-slate-50">
+                                <i class="fa-solid fa-minus"></i> การลบ (-)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Fraction 1 Control (Vertical) -->
+                    <div class="bg-white p-5 rounded-2xl border-l-4 border-l-blue-500 border border-slate-200 shadow-sm flex flex-col gap-4">
+                        <div class="flex items-center justify-between">
+                            <span class="font-bold text-blue-600 text-sm flex items-center gap-2">
+                                <i class="fa-solid fa-table-columns"></i> เศษส่วนที่ 1 (แบ่งแนวตั้ง)
+                            </span>
+                            <span id="frac1-display" class="font-bold text-lg text-blue-600 bg-blue-50 px-3 py-0.5 rounded-lg border border-blue-100">1/2</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-xs text-slate-500 block mb-1">ตัวเศษ (จำนวนช่องระบาย):</label>
+                                <input type="number" id="f1-num" min="1" max="5" value="1" onchange="updateFractions()" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-center font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="text-xs text-slate-500 block mb-1">ตัวส่วน (ส่วนแบ่งแนวตั้ง):</label>
+                                <select id="f1-den" onchange="updateFractions()" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="2" selected>2 ส่วน</option>
+                                    <option value="3">3 ส่วน</option>
+                                    <option value="4">4 ส่วน</option>
+                                    <option value="5">5 ส่วน</option>
+                                    <option value="6">6 ส่วน</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fraction 2 Control (Horizontal) -->
+                    <div class="bg-white p-5 rounded-2xl border-l-4 border-l-red-500 border border-slate-200 shadow-sm flex flex-col gap-4">
+                        <div class="flex items-center justify-between">
+                            <span class="font-bold text-red-600 text-sm flex items-center gap-2">
+                                <i class="fa-solid fa-table-cells text-red-500"></i> เศษส่วนที่ 2 (แบ่งแนวนอน)
+                            </span>
+                            <span id="frac2-display" class="font-bold text-lg text-red-600 bg-red-50 px-3 py-0.5 rounded-lg border border-red-100">1/3</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-xs text-slate-500 block mb-1">ตัวเศษ (จำนวนช่องระบาย):</label>
+                                <input type="number" id="f2-num" min="1" max="5" value="1" onchange="updateFractions()" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-center font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-red-500">
+                            </div>
+                            <div>
+                                <label class="text-xs text-slate-500 block mb-1">ตัวส่วน (ส่วนแบ่งแนวนอน):</label>
+                                <select id="f2-den" onchange="updateFractions()" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-red-500">
+                                    <option value="2">2 ส่วน</option>
+                                    <option value="3" selected>3 ส่วน</option>
+                                    <option value="4">4 ส่วน</option>
+                                    <option value="5">5 ส่วน</option>
+                                    <option value="6">6 ส่วน</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 1: Reasonableness Estimate Quiz (Game Rule) -->
+                    <div class="bg-amber-50 border border-amber-200 rounded-2xl p-5 flex flex-col gap-3 shadow-sm">
+                        <div class="flex items-center gap-2 font-bold text-amber-900 text-sm">
+                            <i class="fa-solid fa-compass text-amber-600"></i> ขั้นที่ 1: คาดเดาขนาดผลลัพธ์ (Reasonableness)
+                        </div>
+                        <p class="text-xs text-amber-800">ก่อนกดซ้อนทาบ ลองทายว่าคำตอบ <span id="estimate-equation-text" class="font-bold">1/2 + 1/3</span> ควรมีค่าเท่าใด?</p>
+                        <div class="grid grid-cols-3 gap-2 mt-1">
+                            <button onclick="checkEstimate('<0.5')" class="estimate-btn text-xs py-2 px-1 bg-white border border-amber-200 rounded-lg font-medium text-amber-900 hover:bg-amber-100 transition-all">น้อยกว่า ½</button>
+                            <button onclick="checkEstimate('0.5-1.0')" class="estimate-btn text-xs py-2 px-1 bg-white border border-amber-200 rounded-lg font-medium text-amber-900 hover:bg-amber-100 transition-all">ระหว่าง ½ ถึง 1</button>
+                            <button onclick="checkEstimate('>1.0')" class="estimate-btn text-xs py-2 px-1 bg-white border border-amber-200 rounded-lg font-medium text-amber-900 hover:bg-amber-100 transition-all">มากกว่า 1</button>
+                        </div>
+                        <div id="estimate-feedback" class="hidden text-xs font-semibold p-2.5 rounded-lg text-center mt-1"></div>
+                    </div>
+
+                    <!-- Overlay Toggle Action Button -->
+                    <button id="btn-overlay" onclick="toggleOverlay()" class="w-full py-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold rounded-2xl shadow-lg flex items-center justify-center gap-3 transition-all text-base transform hover:-translate-y-0.5">
+                        <i class="fa-solid fa-layer-group text-xl"></i>
+                        <span id="btn-overlay-text">กดซ้อนทาบแผ่นใส (Overlay Grid)</span>
+                    </button>
+                </div>
+
+                <!-- Right Column: Visual Overlay Grids Representation -->
+                <div class="lg:col-span-8 flex flex-col gap-6">
+                    
+                    <!-- Visual Grid Display Container -->
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-6">
+                        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                            <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
+                                <i class="fa-solid fa-eye text-indigo-600"></i> การแสดงผลทางกายภาพ (Concrete-Pictorial Display)
+                            </h3>
+                            <span id="overlay-status-badge" class="text-xs bg-slate-100 text-slate-600 font-medium px-3 py-1 rounded-full border border-slate-200">
+                                สถานะ: แยกแผ่นใส
+                            </span>
+                        </div>
+
+                        <!-- Grids Display Area -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center justify-items-center">
+                            
+                            <!-- Grid 1 Card -->
+                            <div class="flex flex-col items-center gap-3 w-full max-w-[260px]">
+                                <span id="label-grid1" class="text-sm font-bold text-blue-600">แผ่นใส A: 1/2 (แนวตั้ง)</span>
+                                <div id="grid1-box" class="w-full aspect-square border-4 border-blue-500 rounded-xl overflow-hidden bg-white shadow-md relative grid-container transition-all duration-500">
+                                    <!-- Dynamic Grid Generated by JS -->
+                                </div>
+                                <span id="sublabel-grid1" class="text-xs text-slate-500 text-center">แบ่งเป็น 2 ช่องแนวตั้ง ระบายสี 1 ช่อง</span>
+                            </div>
+
+                            <!-- Grid 2 Card -->
+                            <div class="flex flex-col items-center gap-3 w-full max-w-[260px]">
+                                <span id="label-grid2" class="text-sm font-bold text-red-600">แผ่นใส B: 1/3 (แนวนอน)</span>
+                                <div id="grid2-box" class="w-full aspect-square border-4 border-red-500 rounded-xl overflow-hidden bg-white shadow-md relative grid-container transition-all duration-500">
+                                    <!-- Dynamic Grid Generated by JS -->
+                                </div>
+                                <span id="sublabel-grid2" class="text-xs text-slate-500 text-center">แบ่งเป็น 3 ช่องแนวนอน ระบายสี 1 ช่อง</span>
+                            </div>
+
+                        </div>
+
+                        <!-- ABSTRACT CONNECTOR (Bridging to Standard Algorithm) -->
+                        <div class="bg-slate-900 text-white p-5 rounded-xl flex flex-col gap-3 shadow-inner">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold text-indigo-400 uppercase tracking-wider flex items-center gap-2">
+                                    <i class="fa-solid fa-square-root-variable"></i> การเชื่อมโยงสู่อัลกอริทึมตัวเลข (Abstract Tier)
+                                </span>
+                                <span class="text-xs text-slate-400">ตารางส่วนร่วมอัตโนมัติ</span>
+                            </div>
+
+                            <!-- Mathematical Transformation Formula -->
+                            <div class="flex flex-wrap items-center justify-center gap-3 sm:gap-6 py-3 font-mono text-base sm:text-lg">
+                                <!-- Original Fraction 1 -->
+                                <div class="flex flex-col items-center">
+                                    <span id="math-f1-num" class="text-blue-400 font-bold">1</span>
+                                    <div class="w-full h-0.5 bg-white/40 my-0.5"></div>
+                                    <span id="math-f1-den" class="text-blue-400 font-bold">2</span>
+                                </div>
+
+                                <span id="math-op-sign" class="text-xl font-bold text-amber-400">+</span>
+
+                                <!-- Original Fraction 2 -->
+                                <div class="flex flex-col items-center">
+                                    <span id="math-f2-num" class="text-red-400 font-bold">1</span>
+                                    <div class="w-full h-0.5 bg-white/40 my-0.5"></div>
+                                    <span id="math-f2-den" class="text-red-400 font-bold">3</span>
+                                </div>
+
+                                <span class="text-xl font-bold text-slate-400">=</span>
+
+                                <!-- Converted Common Grid Fraction 1 -->
+                                <div class="flex flex-col items-center bg-white/10 px-2 py-1 rounded">
+                                    <span id="math-c1-num" class="text-blue-300 font-bold">3</span>
+                                    <div class="w-full h-0.5 bg-white/40 my-0.5"></div>
+                                    <span id="math-c1-den" class="text-indigo-300 font-bold">6</span>
+                                </div>
+
+                                <span id="math-op-sign-2" class="text-xl font-bold text-amber-400">+</span>
+
+                                <!-- Converted Common Grid Fraction 2 -->
+                                <div class="flex flex-col items-center bg-white/10 px-2 py-1 rounded">
+                                    <span id="math-c2-num" class="text-red-300 font-bold">2</span>
+                                    <div class="w-full h-0.5 bg-white/40 my-0.5"></div>
+                                    <span id="math-c2-den" class="text-indigo-300 font-bold">6</span>
+                                </div>
+
+                                <span class="text-xl font-bold text-emerald-400">=</span>
+
+                                <!-- Final Answer -->
+                                <div class="flex flex-col items-center bg-emerald-500/20 border border-emerald-500 px-3 py-1 rounded-lg">
+                                    <span id="math-ans-num" class="text-emerald-300 font-bold text-xl">5</span>
+                                    <div class="w-full h-0.5 bg-emerald-400 my-0.5"></div>
+                                    <span id="math-ans-den" class="text-emerald-300 font-bold text-xl">6</span>
+                                </div>
+                            </div>
+
+                            <!-- Explanatory Text Box -->
+                            <div id="explanation-box" class="text-xs text-slate-300 bg-white/5 p-3 rounded-lg border border-white/10">
+                                เมื่อซ้อนทาบแผ่นใส ทั้งสองรูปจะถูกแบ่งเป็นตารางส่วนร่วมขนาดเท่ากันคือ <b class="text-indigo-300">6 ช่อง</b> โดย <span class="text-blue-300">1/2 เปลี่ยนเป็น 3/6</span> และ <span class="text-red-300">1/3 เปลี่ยนเป็น 2/6</span> สามารถนำจำนวนช่องที่ระบายสีมาบวกกันได้ทันที!
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- TAB 2: ERROR DETECTIVE GAME -->
+        <section id="sec-detective" class="tab-content hidden flex-col gap-6">
+            <div class="bg-gradient-to-r from-purple-900 to-slate-900 text-white p-6 rounded-2xl shadow-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <span class="inline-block bg-purple-500/30 text-purple-200 text-xs px-3 py-1 rounded-full font-medium mb-2 border border-purple-400/30">Metacognition & Error Analysis</span>
+                    <h2 class="text-2xl font-bold flex items-center gap-2">
+                        <i class="fa-solid fa-user-ninja text-amber-400"></i> โหมดนักสืบจับผิด (Fraction Detective Lab)
+                    </h2>
+                    <p class="text-purple-100 text-sm mt-1">วิเคราะห์และจับผิดข้อผิดพลาดที่พบบ่อยจากเพื่อนๆ เพื่อฝึกการตรวจสอบตรรกะเชิงเหตุผล</p>
+                </div>
+                <div class="bg-amber-400/20 border border-amber-400/30 p-3 rounded-xl text-amber-200 text-xs font-medium">
+                    <i class="fa-solid fa-trophy text-amber-400 mr-1"></i> สะสมพลังงาน REP จากการสืบหาความจริง!
+                </div>
+            </div>
+
+            <!-- Case Studies Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                <!-- Case 1 -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between gap-4">
+                    <div class="flex flex-col gap-3">
+                        <div class="flex items-center justify-between">
+                            <span class="bg-red-100 text-red-700 text-xs font-bold px-3 py-1 rounded-full">คดีที่ #1: การบวกเศษและส่วนโดยตรง</span>
+                            <span class="text-xs text-slate-400"><i class="fa-solid fa-clock"></i> ระดับความยาก: ง่าย</span>
+                        </div>
+                        <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl">
+                            <p class="text-sm text-slate-700 font-medium">
+                                👦 <b>เด็กชายสมชาย กล่าวว่า:</b> <br>
+                                <span class="font-mono text-base text-red-600 font-bold">"½ + ⅓ = ⅖ สบายมากครับ! เพราะนำตัวเศษ 1+1=2 และนำตัวส่วน 2+3=5"</span>
+                            </p>
+                        </div>
+                        <div class="text-xs text-slate-600 flex flex-col gap-2">
+                            <p class="font-bold text-slate-700">คำถามนักสืบ: ข้อสรุปของสมชายถูกต้องหรือไม่? และเพราะเหตุใด?</p>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col gap-2 border-t border-slate-100 pt-3">
+                        <button onclick="solveCase(1, 'wrong')" class="w-full py-2.5 px-4 bg-slate-100 hover:bg-emerald-50 hover:border-emerald-500 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 text-left transition-all flex items-center justify-between">
+                            <span>❌ ผิด! เพราะ ½ มีค่าเท่ากับ 2.5/5 แต่เมื่อบวกเพิ่มอีก ⅓ ผลลัพธ์ต้องมากกว่า ½ (ไม่น้อยกว่า ½)</span>
+                            <i class="fa-solid fa-chevron-right text-slate-400"></i>
+                        </button>
+                        <button onclick="solveCase(1, 'right')" class="w-full py-2.5 px-4 bg-slate-100 hover:bg-red-50 hover:border-red-500 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 text-left transition-all flex items-center justify-between">
+                            <span>✅ ถูกต้องแล้ว ตัวเศษบวกตัวเศษ ตัวส่วนบวกตัวส่วนได้เลย</span>
+                            <i class="fa-solid fa-chevron-right text-slate-400"></i>
+                        </button>
+                    </div>
+                    <div id="case1-result" class="hidden text-xs p-3 rounded-xl font-medium"></div>
+                </div>
+
+                <!-- Case 2 -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between gap-4">
+                    <div class="flex flex-col gap-3">
+                        <div class="flex items-center justify-between">
+                            <span class="bg-amber-100 text-amber-700 text-xs font-bold px-3 py-1 rounded-full">คดีที่ #2: ความลืมเลือนเรื่องการอนุรักษ์ปริมาณ</span>
+                            <span class="text-xs text-slate-400"><i class="fa-solid fa-clock"></i> ระดับความยาก: ปานกลาง</span>
+                        </div>
+                        <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl">
+                            <p class="text-sm text-slate-700 font-medium">
+                                👧 <b>เด็กหญิงเมย์ กล่าวว่า:</b> <br>
+                                <span class="font-mono text-base text-amber-600 font-bold">"หนี้ลบ ¾ - ½ เหลือ 2/2 ค่ะ เพราะจับคูณไขว้แล้ว 3-1=2 และ 4-2=2"</span>
+                            </p>
+                        </div>
+                        <div class="text-xs text-slate-600 flex flex-col gap-2">
+                            <p class="font-bold text-slate-700">คำถามนักสืบ: ข้อผิดพลาดสำคัญของเมย์คืออะไร?</p>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col gap-2 border-t border-slate-100 pt-3">
+                        <button onclick="solveCase(2, 'correct_reason')" class="w-full py-2.5 px-4 bg-slate-100 hover:bg-emerald-50 hover:border-emerald-500 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 text-left transition-all flex items-center justify-between">
+                            <span>❌ ลบส่วนผิด และไม่ได้ปรับตัวส่วนให้อยู่บนกรอบอ้างอิงตารางเดียวกัน (4 ช่อง)</span>
+                            <i class="fa-solid fa-chevron-right text-slate-400"></i>
+                        </button>
+                        <button onclick="solveCase(2, 'wrong_reason')" class="w-full py-2.5 px-4 bg-slate-100 hover:bg-red-50 hover:border-red-500 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 text-left transition-all flex items-center justify-between">
+                            <span>✅ เมย์คำนวณถูกแล้ว เพราะ 2/2 มีค่าเท่ากับ 1 พอดี</span>
+                            <i class="fa-solid fa-chevron-right text-slate-400"></i>
+                        </button>
+                    </div>
+                    <div id="case2-result" class="hidden text-xs p-3 rounded-xl font-medium"></div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- TAB 3: GUIDED 3-SESSION LESSON FLOW -->
+        <section id="sec-lessons" class="tab-content hidden flex-col gap-6">
+            <div class="bg-gradient-to-r from-emerald-800 to-teal-800 text-white p-6 rounded-2xl shadow-lg">
+                <span class="inline-block bg-emerald-500/30 text-emerald-200 text-xs px-3 py-1 rounded-full font-medium mb-2 border border-emerald-400/30">Instructional Design</span>
+                <h2 class="text-2xl font-bold">แผนการจัดการเรียนรู้ 3 คาบ (50-60 นาที/คาบ)</h2>
+                <p class="text-emerald-100 text-sm mt-1">กระบวนการจัดกิจกรรมแบบบันได 3 ขั้น จากสื่อรูปธรรมสู่สัญลักษณ์อย่างเป็นระบบ</p>
+            </div>
+
+            <!-- 3 Session Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                
+                <!-- Session 1 -->
+                <div class="bg-white rounded-2xl border border-slate-200 p-6 flex flex-col gap-4 shadow-sm hover:shadow-md transition-shadow">
+                    <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-lg">
+                        1
+                    </div>
+                    <div>
+                        <span class="text-xs font-bold text-blue-600 uppercase tracking-wide">คาบที่ 1 (Concrete -> Pictorial)</span>
+                        <h3 class="font-bold text-slate-800 text-base mt-1">"เห็นภาพ ปรับปริมาณ"</h3>
+                    </div>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        เน้นการลงมือซ้อนทาบแผ่นใสรูปธรรม สังเกตการเกิดตารางส่วนร่วม สัมผัสถึงขนาดพื้นที่ และฝึกคาดคะเนความสมเหตุสมผลของขนาดผลลัพธ์
+                    </p>
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-xs">
+                        <span class="font-bold text-slate-700 block mb-1">🔑 คำถาม Scaffolding:</span>
+                        <p class="italic text-slate-600">"เมื่อนำแผ่นใสแบ่งแนวตั้งกับแนวนอนมาทาบกัน เกิดตารางกี่ช่อง? และขนาดช่องเดิมเปลี่ยนแปลงอย่างไร?"</p>
+                    </div>
+                </div>
+
+                <!-- Session 2 -->
+                <div class="bg-white rounded-2xl border border-slate-200 p-6 flex flex-col gap-4 shadow-sm hover:shadow-md transition-shadow">
+                    <div class="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-lg">
+                        2
+                    </div>
+                    <div>
+                        <span class="text-xs font-bold text-indigo-600 uppercase tracking-wide">คาบที่ 2 (Pictorial -> Abstract)</span>
+                        <h3 class="font-bold text-slate-800 text-base mt-1">"พิสูจน์ตาราง สร้างส่วนร่วม"</h3>
+                    </div>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        ถอดจากแผ่นใสสู่การวาดภาพลงใบงาน (Area Model) ถอดรหัสตารางส่วนร่วมซ้อนทาบสู่ตัวเลขคูณเศษและส่วน เพื่อเชื่อมโยงสู่อัลกอริทึมมาตรฐาน
+                    </p>
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-xs">
+                        <span class="font-bold text-slate-700 block mb-1">🔑 คำถาม Scaffolding:</span>
+                        <p class="italic text-slate-600">"ตัวเลขคูณตัวส่วนในสูตร สอดคล้องกับเส้นแบ่งตารางที่เราวาดเพิ่มขึ้นมาอย่างไร?"</p>
+                    </div>
+                </div>
+
+                <!-- Session 3 -->
+                <div class="bg-white rounded-2xl border border-slate-200 p-6 flex flex-col gap-4 shadow-sm hover:shadow-md transition-shadow">
+                    <div class="w-10 h-10 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center font-bold text-lg">
+                        3
+                    </div>
+                    <div>
+                        <span class="text-xs font-bold text-purple-600 uppercase tracking-wide">คาบที่ 3 (Application & Analysis)</span>
+                        <h3 class="font-bold text-slate-800 text-base mt-1">"นักสืบเศษส่วน & ไขปริศนาโจทย์"</h3>
+                    </div>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        สอดแทรกกิจกรรม Error Analysis จับผิดข้อผิดพลาดของเพื่อนจำลอง ปรับประยุกต์ใช้ในการแก้โจทย์ปัญหาชีวิตจริง
+                    </p>
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-xs">
+                        <span class="font-bold text-slate-700 block mb-1">🔑 คำถาม Scaffolding:</span>
+                        <p class="italic text-slate-600">"ถ้าเพื่อนลืมปรับตัวส่วนให้เท่ากัน คำตอบที่ได้จะขัดแย้งกับความเป็นจริงอย่างไร?"</p>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- TAB 4: TEACHER GUIDE & ASSESSMENT RUBRIC -->
+        <section id="sec-teacher" class="tab-content hidden flex-col gap-6">
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-6">
+                
+                <div class="border-b border-slate-100 pb-4">
+                    <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-clipboard-check text-blue-600"></i> คู่มือแก้ข้อผิดพลาด (Misconception Handling) & เกณฑ์ประเมิน Rubric
+                    </h2>
+                    <p class="text-xs text-slate-500 mt-1">แนวทางสำหรับครูในการตอบโต้ข้อเข้าใจผิดเชิงมโนทัศน์ของนักเรียนด้วยนวัตกรรม FFOG</p>
+                </div>
+
+                <!-- Misconception Table -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="bg-slate-100 text-slate-700 border-b border-slate-200">
+                                <th class="p-3 font-bold">ข้อเข้าใจผิดที่พบบ่อย (Misconception)</th>
+                                <th class="p-3 font-bold">สาเหตุเชิงลึก (Root Cause)</th>
+                                <th class="p-3 font-bold">แนวทางตอบโต้ด้วยนวัตกรรม FFOG</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            <tr>
+                                <td class="p-3 font-mono font-bold text-red-600">a/b + c/d = (a+c)/(b+d)</td>
+                                <td class="p-3 text-slate-600">มองเศษส่วนเป็นจำนวนเต็ม 2 ตัวแยกกัน ปราศจากมโนทัศน์เรื่องส่วนอ้างอิง</td>
+                                <td class="p-3 text-slate-600">ให้นักเรียนใช้แผ่นใสซ้อนทาบ จะเห็นว่าขนาดช่องตารางย่อยถูกแบ่งจนเท่ากัน ไม่ใช่การจับตารางมารวมกันดื้อๆ</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-mono font-bold text-amber-600">ลบตัวส่วนด้วยเมื่อลบตัวเศษ</td>
+                                <td class="p-3 text-slate-600">ท่องจำอัลกอริทึมโดยมองไม่เห็นภาพการอนุรักษ์ขนาดของหน่วยนับ</td>
+                                <td class="p-3 text-slate-600">ชี้ให้นักเรียนดูตารางส่วนร่วมว่าการลบคือการเอาช่องสีออกไป แต่ขนาดตารางอ้างอิงยังคงมีจำนวนช่องเท่าเดิม</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-mono font-bold text-purple-600">ท่องคูณไขว้โดยลืมเปลี่ยนส่วน</td>
+                                <td class="p-3 text-slate-600">เร่งรัดสูตรลัดข้ามขั้นตอน CPA</td>
+                                <td class="p-3 text-slate-600">ใช้กติกา "ตั้งสมมติฐานขนาดผลลัพธ์ก่อนคิด" ให้เด็กประมาณค่าก่อนเพื่อดึงสติ</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Rubric Assessment Scale -->
+                <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 flex flex-col gap-3">
+                    <h3 class="font-bold text-sm text-slate-700">📊 เกณฑ์การประเมินความเข้าใจเชิงมโนทัศน์ (Rubric Scoring)</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
+                        <div class="bg-white p-3 rounded-lg border border-slate-200">
+                            <span class="font-bold text-emerald-600 block mb-1">ระดับ 4: ดีเยี่ยม</span>
+                            อธิบายการเกิดตารางส่วนร่วมจากการซ้อนทาบ เชื่อมโยงสู่อัลกอริทึม และจับผิดข้อผิดพลาดได้ถูกต้อง
+                        </div>
+                        <div class="bg-white p-3 rounded-lg border border-slate-200">
+                            <span class="font-bold text-blue-600 block mb-1">ระดับ 3: ดี</span>
+                            แสดงการซ้อนทาบตารางและเปลี่ยนตัวส่วนได้ถูกต้อง แต่อาจต้องใช้เวลาในการอธิบายการเชื่อมโยงตัวเลข
+                        </div>
+                        <div class="bg-white p-3 rounded-lg border border-slate-200">
+                            <span class="font-bold text-amber-600 block mb-1">ระดับ 2: พอใช้</span>
+                            ซ้อนทาบแผ่นใสได้ แต่นับจำนวนช่องตารางส่วนร่วมสับสน ต้องมีครูช่วยชี้แนะ
+                        </div>
+                        <div class="bg-white p-3 rounded-lg border border-slate-200">
+                            <span class="font-bold text-red-600 block mb-1">ระดับ 1: ปรับปรุง</span>
+                            ยังจับบวกตัวเศษและตัวส่วนโดยตรง มองไม่เห็นความเชื่อมโยงของพื้นที่
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-4 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500">
+            © ต้นแบบนวัตกรรมการเรียนรู้คณิตศาสตร์ประถมศึกษา | พัฒนาตามแนวคิด CPA, Gamification & Design Thinking
+        </div>
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // State Variables
+        let state = {
+            op: '+',
+            f1: { num: 1, den: 2 },
+            f2: { num: 1, den: 3 },
+            isOverlay: false,
+            rep: 100,
+            hasEstimated: false
+        };
+
+        // Initialize on load
+        window.onload = function() {
+            renderGrids();
+            updateMathConnector();
+        };
+
+        // Switch Navigation Tabs
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('bg-blue-600', 'text-white', 'shadow-sm');
+                el.classList.add('text-slate-600', 'hover:bg-slate-100');
+            });
+
+            document.getElementById('sec-' + tabId).classList.remove('hidden');
+            const activeBtn = document.getElementById('tab-' + tabId);
+            activeBtn.classList.add('bg-blue-600', 'text-white', 'shadow-sm');
+            activeBtn.classList.remove('text-slate-600', 'hover:bg-slate-100');
+        }
+
+        // Set Operation (+ or -)
+        function setOperation(op) {
+            state.op = op;
+            document.getElementById('op-add').className = op === '+' 
+                ? 'py-2.5 px-4 rounded-xl border-2 font-bold text-sm flex items-center justify-center gap-2 transition-all border-blue-600 bg-blue-50 text-blue-700'
+                : 'py-2.5 px-4 rounded-xl border-2 font-bold text-sm flex items-center justify-center gap-2 transition-all border-slate-200 text-slate-600 hover:bg-slate-50';
+            
+            document.getElementById('op-sub').className = op === '-' 
+                ? 'py-2.5 px-4 rounded-xl border-2 font-bold text-sm flex items-center justify-center gap-2 transition-all border-blue-600 bg-blue-50 text-blue-700'
+                : 'py-2.5 px-4 rounded-xl border-2 font-bold text-sm flex items-center justify-center gap-2 transition-all border-slate-200 text-slate-600 hover:bg-slate-50';
+
+            document.getElementById('math-op-sign').innerText = op;
+            document.getElementById('math-op-sign-2').innerText = op;
+            
+            state.hasEstimated = false;
+            document.getElementById('estimate-feedback').className = 'hidden';
+            updateFractions();
+        }
+
+        // Update Fraction Input Values
+        function updateFractions() {
+            let n1 = parseInt(document.getElementById('f1-num').value) || 1;
+            let d1 = parseInt(document.getElementById('f1-den').value) || 2;
+            let n2 = parseInt(document.getElementById('f2-num').value) || 1;
+            let d2 = parseInt(document.getElementById('f2-den').value) || 3;
+
+            // Boundary validation
+            if (n1 >= d1) n1 = d1 - 1;
+            if (n1 < 1) n1 = 1;
+            if (n2 >= d2) n2 = d2 - 1;
+            if (n2 < 1) n2 = 1;
+
+            document.getElementById('f1-num').value = n1;
+            document.getElementById('f2-num').value = n2;
+
+            state.f1 = { num: n1, den: d1 };
+            state.f2 = { num: n2, den: d2 };
+
+            document.getElementById('frac1-display').innerText = `${n1}/${d1}`;
+            document.getElementById('frac2-display').innerText = `${n2}/${d2}`;
+            document.getElementById('estimate-equation-text').innerText = `${n1}/${d1} ${state.op} ${n2}/${d2}`;
+
+            renderGrids();
+            updateMathConnector();
+        }
+
+        // Toggle Overlay State
+        function toggleOverlay() {
+            state.isOverlay = !state.isOverlay;
+            const btnText = document.getElementById('btn-overlay-text');
+            const badge = document.getElementById('overlay-status-badge');
+
+            if (state.isOverlay) {
+                btnText.innerText = "ยกเลิกการซ้อนทาบ (Separate Grids)";
+                badge.innerText = "สถานะ: ซ้อนทาบแล้ว (Overlay Grid)";
+                badge.className = "text-xs bg-purple-100 text-purple-700 font-bold px-3 py-1 rounded-full border border-purple-200";
+            } else {
+                btnText.innerText = "กดซ้อนทาบแผ่นใส (Overlay Grid)";
+                badge.innerText = "สถานะ: แยกแผ่นใส";
+                badge.className = "text-xs bg-slate-100 text-slate-600 font-medium px-3 py-1 rounded-full border border-slate-200";
+            }
+
+            renderGrids();
+        }
+
+        // Render 2D Grid Visuals
+        function renderGrids() {
+            const g1 = document.getElementById('grid1-box');
+            const g2 = document.getElementById('grid2-box');
+
+            g1.innerHTML = '';
+            g2.innerHTML = '';
+
+            const cols1 = state.f1.den;
+            const rows1 = state.isOverlay ? state.f2.den : 1;
+
+            const cols2 = state.isOverlay ? state.f1.den : 1;
+            const rows2 = state.f2.den;
+
+            // Render Grid 1 (Vertical Columns + Optional Horizontal Overlay)
+            g1.style.display = 'grid';
+            g1.style.gridTemplateColumns = `repeat(${cols1}, 1fr)`;
+            g1.style.gridTemplateRows = `repeat(${rows1}, 1fr)`;
+
+            for (let r = 0; r < rows1; r++) {
+                for (let c = 0; c < cols1; c++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'border border-blue-200 cell-transition flex items-center justify-center';
+                    if (c < state.f1.num) {
+                        cell.classList.add('bg-blue-500/80');
+                    } else {
+                        cell.classList.add('bg-blue-50/20');
+                    }
+                    g1.appendChild(cell);
+                }
+            }
+
+            // Render Grid 2 (Horizontal Rows + Optional Vertical Overlay)
+            g2.style.display = 'grid';
+            g2.style.gridTemplateColumns = `repeat(${cols2}, 1fr)`;
+            g2.style.gridTemplateRows = `repeat(${rows2}, 1fr)`;
+
+            for (let r = 0; r < rows2; r++) {
+                for (let c = 0; c < cols2; c++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'border border-red-200 cell-transition flex items-center justify-center';
+                    if (r < state.f2.num) {
+                        cell.classList.add('bg-red-500/80');
+                    } else {
+                        cell.classList.add('bg-red-50/20');
+                    }
+                    g2.appendChild(cell);
+                }
+            }
+        }
+
+        // Update Abstract Math Connector
+        function updateMathConnector() {
+            const d1 = state.f1.den;
+            const n1 = state.f1.num;
+            const d2 = state.f2.den;
+            const n2 = state.f2.num;
+
+            const commonDen = d1 * d2;
+            const c1Num = n1 * d2;
+            const c2Num = n2 * d1;
+
+            let ansNum = state.op === '+' ? c1Num + c2Num : c1Num - c2Num;
+
+            document.getElementById('math-f1-num').innerText = n1;
+            document.getElementById('math-f1-den').innerText = d1;
+            document.getElementById('math-f2-num').innerText = n2;
+            document.getElementById('math-f2-den').innerText = d2;
+
+            document.getElementById('math-c1-num').innerText = c1Num;
+            document.getElementById('math-c1-den').innerText = commonDen;
+            document.getElementById('math-c2-num').innerText = c2Num;
+            document.getElementById('math-c2-den').innerText = commonDen;
+
+            document.getElementById('math-ans-num').innerText = ansNum;
+            document.getElementById('math-ans-den').innerText = commonDen;
+
+            const exp = document.getElementById('explanation-box');
+            exp.innerHTML = `เมื่อซ้อนทาบแผ่นใส ทั้งสองรูปจะถูกแบ่งเป็นตารางส่วนร่วมขนาดเท่ากันคือ <b class="text-indigo-300">${commonDen} ช่อง</b> โดย <span class="text-blue-300">${n1}/${d1} เปลี่ยนเป็น ${c1Num}/${commonDen}</span> และ <span class="text-red-300">${n2}/${d2} เปลี่ยนเป็น ${c2Num}/${commonDen}</span> ผลลัพธ์จึงเท่ากับ <b class="text-emerald-400">${ansNum}/${commonDen}</b>!`;
+        }
+
+        // Reasonableness Estimate Checker
+        function checkEstimate(guess) {
+            if (state.hasEstimated) return;
+
+            const val1 = state.f1.num / state.f1.den;
+            const val2 = state.f2.num / state.f2.den;
+            const total = state.op === '+' ? val1 + val2 : val1 - val2;
+
+            let correctRange = '';
+            if (total < 0.5) correctRange = '<0.5';
+            else if (total <= 1.0) correctRange = '0.5-1.0';
+            else correctRange = '>1.0';
+
+            const fb = document.getElementById('estimate-feedback');
+            fb.classList.remove('hidden');
+
+            if (guess === correctRange) {
+                fb.className = 'text-xs font-semibold p-2.5 rounded-lg text-center mt-1 bg-emerald-100 text-emerald-800 border border-emerald-300';
+                fb.innerHTML = '🎉 ถูกต้องแล้ว! สมมติฐานของคุณสมเหตุสมผลมาก (+20 แต้ม REP)';
+                addRep(20);
+            } else {
+                fb.className = 'text-xs font-semibold p-2.5 rounded-lg text-center mt-1 bg-amber-100 text-amber-800 border border-amber-300';
+                fb.innerHTML = `💡 ยังไม่ถูกต้อง ผลรวมจริงตกลงในช่วง ${correctRange === '<0.5' ? 'น้อยกว่า ½' : correctRange === '0.5-1.0' ? 'ระหว่าง ½ ถึง 1' : 'มากกว่า 1'} ลองสังเกตขนาดพื้นที่ใหม่นะ`;
+            }
+            state.hasEstimated = true;
+        }
+
+        // Gamification Score Management
+        function addRep(amount) {
+            state.rep += amount;
+            document.getElementById('repScore').innerText = state.rep;
+        }
+
+        // Fraction Detective Case Solver
+        function solveCase(caseId, choice) {
+            const res = document.getElementById(`case${caseId}-result`);
+            res.classList.remove('hidden');
+
+            if (caseId === 1) {
+                if (choice === 'wrong') {
+                    res.className = 'text-xs p-3 rounded-xl font-medium bg-emerald-100 text-emerald-800 border border-emerald-300 mt-2';
+                    res.innerHTML = '🕵️‍♂️ <b>ถูกต้อง! ยอดนักสืบ:</b> การบวกเศษและส่วนโดยตรงขัดแย้งกับความเป็นจริง เพราะ ½ เพิ่มอีก ⅓ ต้องได้มากกว่า ½ ไม่ใช่น้อยลง!';
+                    addRep(30);
+                } else {
+                    res.className = 'text-xs p-3 rounded-xl font-medium bg-red-100 text-red-800 border border-red-300 mt-2';
+                    res.innerHTML = '❌ <b>ข้อสรุปยังไม่ถูก:</b> การจับตัวส่วนบวกกันโดยตรงจะทำให้กรอบตารางอ้างอิงเสียไป ลองใช้ simulator ตรวจสอบนะ!';
+                }
+            } else if (caseId === 2) {
+                if (choice === 'correct_reason') {
+                    res.className = 'text-xs p-3 rounded-xl font-medium bg-emerald-100 text-emerald-800 border border-emerald-300 mt-2';
+                    res.innerHTML = '🕵️‍♂️ <b>ถูกต้อง! ยอดนักสืบ:</b> เมย์ไม่ได้ปรับตัวส่วนให้อยู่บนกรอบตารางเดียวกัน ทำให้การลบปริมาณผิดพลาด';
+                    addRep(30);
+                } else {
+                    res.className = 'text-xs p-3 rounded-xl font-medium bg-red-100 text-red-800 border border-red-300 mt-2';
+                    res.innerHTML = '❌ <b>ยังไม่ถูกต้อง:</b> ¾ หักออก ½ จะเหลือเพียง ¼ ไม่ใช่ 1 แน่นอน!';
+                }
+            }
+        }
+    </script>
+</body>
+</html>
